@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+
+  <!-- Begin Jekyll SEO tag v2.7.1 -->
+  <title>ACE-Step 1.5: Pushing the Boundaries of Open-Source Music Generation</title>
+  <meta name="generator" content="Jekyll v3.9.0">
+  <meta property="og:title" content="ACE-Step 1.5: Pushing the Boundaries of Open-Source Music Generation">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary">
+  <!-- End Jekyll SEO tag -->
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#5D59FF">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Lyrics toggle section */
+    .lyrics-toggle {
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      margin-top: 0;
+      overflow: hidden;
+    }
+
+    .lyrics-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: #f8f9fa;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .toggle-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .lyrics-toggle.expanded .toggle-icon {
+      transform: rotate(180deg);
+    }
+
+    .lyrics-body {
+      padding: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+
+    .lyrics-toggle.expanded .lyrics-body {
+      padding: 20px;
+      max-height: 300px;
+      /* Reduced height to encourage scrolling */
+      overflow-y: auto;
+      /* Add vertical scrolling */
+      overflow-x: auto;
+      /* Add horizontal scrolling when content is too wide */
+    }
+
+    /* Ensure pre element doesn't expand beyond container */
+    .lyrics-body pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-x: auto;
+      margin: 0;
+      /* Remove default margin to ensure first line is visible */
+      display: block;
+      /* Ensure block display */
+      text-align: left;
+      /* Ensure left alignment */
+      max-width: 100%;
+      /* Constrain to container width */
+    }
+
+    /* Constrain lyrics toggle container */
+    .lyrics-toggle {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Toggle all button styling */
+    .toggle-all-button {
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 8px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .toggle-all-button:hover {
+      background-color: #e9ecef;
+    }
+
+    /* Fixed toggle button container */
+    .fixed-toggle-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 5px;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Play button for individual tracks */
+    .track-play-btn {
+      background-color: #5D59FF;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .track-play-btn:hover {
+      background-color: #4A46E3;
+    }
+
+    .track-play-btn.playing {
+      background-color: #4A46E3;
+    }
+
+    /* Global player bar styling */
+    #global-player {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #333;
+      border-top: 1px solid #222;
+      padding: 10px 20px;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 1000;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      height: 80px;
+    }
+
+    #global-player.visible {
+      transform: translateY(0);
+    }
+
+    .player-track-info {
+      flex: 0 0 250px;
+      display: flex;
+      align-items: center;
+      color: #fff;
+    }
+
+    .track-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 180px;
+      overflow: hidden;
+    }
+
+    .player-track-title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 3px;
+      color: #fff;
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-track-genre {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Add scrolling animation for long text */
+    .player-track-title.scrolling,
+    .player-track-genre.scrolling {
+      text-overflow: clip;
+      position: relative;
+      display: inline-block;
+      padding-right: 10px;
+      /* Add some space at the end */
+      animation: marquee 10s linear infinite;
+      animation-delay: 1s;
+      /* Delay before starting */
+    }
+
+    /* Animation for scrolling text */
+    @keyframes marquee {
+
+      0%,
+      15% {
+        transform: translateX(0);
+      }
+
+      /* Pause at the beginning */
+      85%,
+      100% {
+        transform: translateX(calc(-100% + 180px));
+      }
+
+      /* Stop when text is at the end of container */
+    }
+
+    /* Different animation speeds based on content length */
+    .player-track-title.scrolling.length-medium,
+    .player-track-genre.scrolling.length-medium {
+      animation-duration: 15s;
+    }
+
+    .player-track-title.scrolling.length-long,
+    .player-track-genre.scrolling.length-long {
+      animation-duration: 20s;
+    }
+
+    /* Ensure the animation stays within the container */
+    .track-details {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .player-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background-color 0.2s ease;
+    }
+
+    .player-btn:hover {
+      background-color: #333;
+    }
+
+    .player-btn.active {
+      color: #fff;
+    }
+
+    .mode-indicator {
+      font-size: 10px;
+      vertical-align: super;
+      margin-left: 2px;
+    }
+
+    .player-play-btn {
+      background-color: transparent;
+      color: white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+    }
+
+    .player-play-btn:hover {
+      background-color: #333;
+    }
+
+    .player-progress-container {
+      flex-grow: 1;
+      height: 4px;
+      background-color: #444;
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .player-progress-bar {
+      height: 100%;
+      background-color: #fff;
+      border-radius: 2px;
+      width: 0%;
+      position: relative;
+    }
+
+    .player-progress-handle {
+      width: 12px;
+      height: 12px;
+      background-color: #fff;
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      right: -6px;
+      transform: translateY(-50%);
+      cursor: grab;
+    }
+
+    .player-time-display {
+      font-size: 14px;
+      color: #fff;
+      min-width: 80px;
+      text-align: right;
+      font-family: monospace;
+    }
+
+    /* Add padding to the bottom of the page to account for the player */
+    body {
+      padding-bottom: 80px;
+    }
+
+    /* Extra controls styling */
+    .player-extra-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+
+<body data-new-gr-c-s-check-loaded="14.1001.0" data-gr-ext-installed="">
+  <!-- Include the audio loader script -->
+  <script src="audio-loader.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // This will hold our music samples data organized by sections
+      let musicSampleSections = {};
+      // This will hold the flattened list of all samples
+      let musicSamples = [];
+
+      // Initialize the AudioLoader
+      const audioLoader = new AudioLoader({
+        username: 'ace-step',
+        repo: 'ace-step-v1.5.github.io',
+        releaseTag: '',
+        useJsDelivr: true,
+        preferMp3: true
+      });
+
+      // Function to load the samples data from the JSON file
+      async function loadSamplesData() {
+        try {
+          // Fetch the samples data from the JSON file
+          const response = await fetch('samples_data.json');
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch samples data: ${response.status}`);
+          }
+
+          // Parse the JSON response
+          musicSampleSections = await response.json();
+
+          // Generate the table rows
+
+          generateTableRows(['GeneralSongs'], 'baseline-quality');
+          
+          // Hidden sections - commented out
+          // generateTableRows(['Controlability-retake', 'Controlability-repaint', 'Controlability-edit'], 'controlability');
+          // generateTableRows(['Application-Lyric2Vocal', 'Text2Sample', 'RapMachine'], 'application');
+
+
+          // Initialize mode indicators
+          document.querySelector('#player-shuffle-btn .mode-indicator').textContent = '';
+          document.querySelector('#player-repeat-btn .mode-indicator').textContent = '';
+
+          // Update the toggle all button text to match initial state (all collapsed)
+          document.getElementById('toggle-all-lyrics').textContent = 'Expand All Lyrics';
+
+          // Add click event listeners to all lyrics toggle headers
+          document.querySelectorAll('.lyrics-header').forEach(function (header) {
+            header.addEventListener('click', function () {
+              // Toggle the 'expanded' class on the parent element
+              this.parentElement.classList.toggle('expanded');
+            });
+          });
+
+          // Update the flattened list of all samples
+          musicSamples = Object.values(musicSampleSections).flat();
+          musicSamples.forEach(sample => {
+            fetchTextAndUpdate(`raw/samples/${sample.directory}/${sample.fileName}.txt`, `${sample.id}-lyrics`);
+            fetchTextAndUpdate(`raw/samples/${sample.directory}/${sample.fileName}_prompt.txt`, `${sample.id}-prompt`);
+          });
+
+          // Add event listeners to play buttons after table is generated
+          addPlayButtonListeners();
+        } catch (error) {
+          console.error('Error loading samples data:', error);
+        }
+      }
+
+      // Start loading the samples data
+      loadSamplesData();
+
+      // Generate table rows dynamically by section
+      function generateTableRows(sectionIds, select_id) {
+      // function generateTableRows() {
+        // Make sure we're using the latest flattened list
+        musicSamples = Object.values(musicSampleSections).flat();
+        // const tbody = document.querySelector('table tbody');
+        const tbody = document.querySelector(`tbody#${select_id}`);
+        tbody.innerHTML = ''; // Clear existing content
+
+        // Process each section
+        Object.entries(musicSampleSections).forEach(([sectionId, samples]) => {
+          if (!sectionIds.includes(sectionId)) {
+             return;
+          }
+          // Create section header row
+          const sectionRow = document.createElement('tr');
+          const sectionCell = document.createElement('td');
+          sectionCell.colSpan = 3;
+          sectionCell.className = 'section-header';
+          sectionCell.id = sectionId;
+
+          // Style the section header
+          sectionCell.style.backgroundColor = '#f0f0f0';
+          sectionCell.style.padding = '10px';
+          sectionCell.style.fontWeight = 'bold';
+          sectionCell.style.fontSize = '1.2em';
+          sectionCell.style.textAlign = 'center';
+
+          // Set section title based on ID
+          let sectionTitle = sectionId;
+          if (sectionId === 'GeneralSongs') {
+            sectionTitle = 'General Songs';
+          }
+
+          // Clear existing content
+          sectionCell.textContent = '';
+
+          // Create title element with more prominent styling
+          const titleElement = document.createElement('div');
+          titleElement.textContent = sectionTitle;
+          titleElement.style.marginBottom = '15px';
+          titleElement.style.fontSize = '1.3em';
+          titleElement.style.fontWeight = 'bold';
+          titleElement.style.color = '#333';
+          titleElement.style.letterSpacing = '1px';
+          sectionCell.appendChild(titleElement);
+
+          // Add note div based on section ID with distinct styling
+          const noteDiv = document.createElement('div');
+          noteDiv.style.borderLeft = '4px solid #097EFF';
+          noteDiv.style.paddingLeft = '15px';
+          noteDiv.style.marginBottom = '10px';
+          noteDiv.style.textAlign = 'left';
+          noteDiv.style.fontSize = '0.85em';
+          noteDiv.style.color = '#606c71';
+          noteDiv.style.backgroundColor = '#f8f9fa';
+          noteDiv.style.padding = '8px 15px';
+          noteDiv.style.borderRadius = '0 4px 4px 0';
+
+          const noteTitle = document.createElement('p');
+          noteTitle.style.fontWeight = 'bold';
+          noteTitle.style.marginBottom = '8px';
+          noteTitle.style.color = '#097EFF';
+          noteTitle.style.fontSize = '1em';
+          noteTitle.style.borderBottom = '1px solid #dee2e6';
+          noteTitle.style.paddingBottom = '4px';
+          noteTitle.textContent = 'Note:';
+          noteDiv.appendChild(noteTitle);
+
+          // Add the note div to the section cell if it has content
+          if (noteDiv.childNodes.length > 1) {
+            sectionCell.appendChild(noteDiv);
+          }
+
+          sectionRow.appendChild(sectionCell);
+          tbody.appendChild(sectionRow);
+
+          // Helper function to add note items
+          function addNoteItem(parent, text) {
+            const noteItem = document.createElement('p');
+            noteItem.style.margin = '0 0 6px 0';
+            noteItem.style.lineHeight = '1.4';
+            noteItem.style.textIndent = '-12px';
+            noteItem.style.paddingLeft = '12px';
+            noteItem.textContent = '- ' + text;
+            parent.appendChild(noteItem);
+          }
+
+          // Add samples for this section
+          samples.forEach(sample => {
+            const row = document.createElement('tr');
+
+            // First column - Prompt
+            const promptCell = document.createElement('td');
+            promptCell.className = 'tg-0lax';
+            promptCell.style.width = '500px';
+            const promptSpan = document.createElement('span');
+            promptSpan.id = `${sample.id}-prompt`;
+            promptSpan.textContent = 'Loading prompt...';
+            promptCell.appendChild(promptSpan);
+
+            // Second column - Lyrics toggle
+            const lyricsCell = document.createElement('td');
+            lyricsCell.style.verticalAlign = 'top';
+            lyricsCell.style.width = '800px'; /* Same width as Caption column */
+            lyricsCell.style.maxWidth = '800px'; /* Prevent expansion */
+            lyricsCell.style.position = 'relative'; /* For proper positioning of child elements */
+
+            const lyricsToggle = document.createElement('div');
+            lyricsToggle.className = 'lyrics-toggle'; // Remove 'expanded' to collapse by default
+
+            const lyricsHeader = document.createElement('div');
+            lyricsHeader.className = 'lyrics-header';
+            lyricsHeader.textContent = 'Lyrics';
+            switch (sample.id) {
+              case 'dark-atmospheric':
+                lyricsHeader.textContent = 'Chinese';
+                break;
+              case 'electro-house':
+                lyricsHeader.textContent = 'Chinese';
+                break;
+              case 'folk-rnb-female':
+                lyricsHeader.textContent = 'Chinese';
+                break;
+              case 'french-pop':
+                lyricsHeader.textContent = 'French';
+                break;
+              case 'german-dance':
+                lyricsHeader.textContent = 'German';
+                break;
+              case 'hip-house':
+                lyricsHeader.textContent = 'Chinese';
+                break;
+              case 'italian-folk':
+                lyricsHeader.textContent = 'Italian';
+                break;
+              case 'jpop':
+                lyricsHeader.textContent = 'Japanese';
+                break;
+              case 'kpop':
+                lyricsHeader.textContent = 'Korean';
+                break;
+              case 'mandopop':
+                lyricsHeader.textContent = 'Chinese';
+                break;
+              case 'portuguese-pop':
+                lyricsHeader.textContent = 'Portuguese';
+                break;
+              case 'russian-folk':
+                lyricsHeader.textContent = 'Russian';
+                break;
+              case 'spanish-song':
+                lyricsHeader.textContent = 'Spanish';
+                break;
+            }
+
+            const toggleIcon = document.createElement('span');
+            toggleIcon.className = 'toggle-icon';
+            toggleIcon.textContent = '▼';
+            lyricsHeader.appendChild(toggleIcon);
+
+            const lyricsBody = document.createElement('div');
+            lyricsBody.className = 'lyrics-body';
+            lyricsBody.style.display = 'flex';
+            lyricsBody.style.flexDirection = 'column';
+            lyricsBody.style.alignItems = 'flex-start';
+
+            const lyricsPre = document.createElement('pre');
+            lyricsPre.id = `${sample.id}-lyrics`;
+            lyricsPre.textContent = 'Loading lyrics...';
+            lyricsPre.style.alignSelf = 'flex-start';
+
+            lyricsBody.appendChild(lyricsPre);
+            lyricsToggle.appendChild(lyricsHeader);
+            lyricsToggle.appendChild(lyricsBody);
+            lyricsCell.appendChild(lyricsToggle);
+
+            // Third column - Audio player
+            const audioCell = document.createElement('td');
+            audioCell.className = 'tg-0lax';
+            audioCell.style.width = '60px'; /* Reduced from 500px to be closer to play button size */
+
+            // Create a play button for this track
+            const playButton = document.createElement('button');
+            playButton.innerHTML = '▶'; // Play icon
+            playButton.className = 'track-play-btn';
+
+            // Store track data as attributes (without src - we'll get it dynamically)
+            playButton.dataset.directory = sample.directory;
+            playButton.dataset.fileName = sample.fileName;
+            playButton.dataset.id = sample.id;
+            playButton.dataset.title = sample.fileName.replace(/_/g, ' ');
+
+            // Add the play button to the cell
+            audioCell.appendChild(playButton);
+
+            // We don't need this line anymore since we're appending the audioWrapper instead
+
+            // Add all cells to the row
+            row.appendChild(promptCell);
+            row.appendChild(lyricsCell);
+            row.appendChild(audioCell);
+
+            // Add the row to the table
+            tbody.appendChild(row);
+          });
+        });
+      }
+
+      // Function to fetch text from file and update element
+      async function fetchTextAndUpdate(filePath, elementId) {
+        try {
+          const response = await fetch(filePath);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch ${filePath}: ${response.status}`);
+          }
+          const text = await response.text();
+          const element = document.getElementById(elementId);
+          if (element) {
+            element.textContent = text;
+          }
+        } catch (error) {
+          console.error('Error fetching text:', error);
+          const element = document.getElementById(elementId);
+          if (element) {
+            element.textContent = 'No Lyrics';
+          }
+        }
+      }
+
+      // Toggle all lyrics functionality
+      const toggleAllButton = document.getElementById('toggle-all-lyrics');
+      let allExpanded = false; // Start with all collapsed
+
+      toggleAllButton.addEventListener('click', function () {
+        const lyricsToggles = document.querySelectorAll('.lyrics-toggle');
+
+        if (allExpanded) {
+          // Collapse all
+          lyricsToggles.forEach(toggle => {
+            toggle.classList.remove('expanded');
+          });
+          toggleAllButton.textContent = 'Expand All Lyrics';
+        } else {
+          // Expand all
+          lyricsToggles.forEach(toggle => {
+            toggle.classList.add('expanded');
+          });
+          toggleAllButton.textContent = 'Collapse All Lyrics';
+        }
+
+        // Toggle the state
+        allExpanded = !allExpanded;
+
+        // If we're collapsing all, make sure to re-expand the currently playing track
+        if (!allExpanded && currentTrackIndex >= 0) {
+          const track = musicSamples[currentTrackIndex];
+          const lyricsElement = document.getElementById(`${track.id}-lyrics`);
+          if (lyricsElement) {
+            const lyricsToggle = lyricsElement.closest('.lyrics-toggle');
+            if (lyricsToggle) {
+              lyricsToggle.classList.add('expanded');
+            }
+          }
+        }
+      });
+
+      // Global Player Implementation
+      const globalPlayer = document.getElementById('global-player');
+      const globalAudio = document.getElementById('global-audio');
+      const playerPlayBtn = document.getElementById('player-play-btn');
+      const playerPrevBtn = document.getElementById('player-prev-btn');
+      const playerNextBtn = document.getElementById('player-next-btn');
+      const playerShuffleBtn = document.getElementById('player-shuffle-btn');
+      const playerRepeatBtn = document.getElementById('player-repeat-btn');
+      const playerProgressContainer = document.querySelector('.player-progress-container');
+      const playerProgressBar = document.querySelector('.player-progress-bar');
+      const playerProgressHandle = document.querySelector('.player-progress-handle');
+      const playerTimeDisplay = document.querySelector('.player-time-display');
+      const playerTrackTitle = document.querySelector('.player-track-title');
+      const playerTrackGenre = document.querySelector('.player-track-genre');
+      const playerAlbumArt = document.getElementById('player-album-art');
+
+      // Player state
+      let currentTrackIndex = -1;
+      let isShuffleMode = false;
+      let isRepeatMode = false;
+      let playQueue = [];
+
+      // Format time function (converts seconds to MM:SS format)
+      function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+      }
+
+      // Update the play queue based on shuffle mode
+      function updatePlayQueue() {
+        if (isShuffleMode) {
+          // Create a shuffled queue excluding the current track
+          const availableTracks = [...Array(musicSamples.length).keys()].filter(i => i !== currentTrackIndex);
+          // Shuffle the available tracks
+          for (let i = availableTracks.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [availableTracks[i], availableTracks[j]] = [availableTracks[j], availableTracks[i]];
+          }
+          // Put the current track at the beginning if it's valid
+          if (currentTrackIndex >= 0) {
+            playQueue = [currentTrackIndex, ...availableTracks];
+          } else {
+            playQueue = availableTracks;
+          }
+        } else {
+          // Sequential mode - just create an array from 0 to the number of tracks
+          playQueue = [...Array(musicSamples.length).keys()];
+          // If we have a current track, rotate the queue so it starts from the next track
+          if (currentTrackIndex >= 0) {
+            const currentIndex = playQueue.indexOf(currentTrackIndex);
+            playQueue = [...playQueue.slice(currentIndex), ...playQueue.slice(0, currentIndex)];
+          }
+        }
+      }
+
+      // Function to update all track buttons to show correct play/pause state
+      function updateTrackButtons() {
+        document.querySelectorAll('.track-play-btn').forEach(button => {
+          const sampleId = button.dataset.id;
+          const trackIndex = musicSamples.findIndex(s => s.id === sampleId);
+          if (trackIndex === currentTrackIndex && !globalAudio.paused) {
+            button.innerHTML = '❚❚'; // Pause icon
+            button.classList.add('playing');
+          } else {
+            button.innerHTML = '▶'; // Play icon
+            button.classList.remove('playing');
+          }
+        });
+      }
+
+      // Function to scroll to the lyrics of the current track and expand only that one
+      function scrollToCurrentTrackLyrics() {
+        if (currentTrackIndex >= 0) {
+          // First collapse all lyrics
+          document.querySelectorAll('.lyrics-toggle').forEach(toggle => {
+            toggle.classList.remove('expanded');
+          });
+
+          // Then expand only the current track's lyrics
+          const track = musicSamples[currentTrackIndex];
+          const lyricsElement = document.getElementById(`${track.id}-lyrics`);
+          if (lyricsElement) {
+            // Make sure the lyrics toggle is expanded
+            const lyricsToggle = lyricsElement.closest('.lyrics-toggle');
+            if (lyricsToggle) {
+              lyricsToggle.classList.add('expanded');
+            }
+
+            // Scroll to the lyrics with a small delay to allow expansion
+            setTimeout(() => {
+              lyricsElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+          }
+        }
+      }
+
+      // Play a specific track
+      async function playTrack(index) {
+        if (index >= 0 && index < musicSamples.length) {
+          currentTrackIndex = index;
+          const track = musicSamples[index];
+
+          // Update player UI
+          playerTrackTitle.textContent = track.fileName.replace(/_/g, ' ');
+          playerTrackGenre.textContent = track.id.replace(/-/g, ' ');
+
+          // Check if text is too long and apply scrolling if needed
+          setTimeout(() => {
+            // For track title
+            playerTrackTitle.classList.remove('scrolling', 'length-medium', 'length-long');
+            const titleText = playerTrackTitle.textContent;
+            playerTrackTitle.setAttribute('data-content', titleText); // Set content for ::after
+
+            if (playerTrackTitle.scrollWidth > playerTrackTitle.clientWidth) {
+              playerTrackTitle.classList.add('scrolling');
+
+              // Calculate ratio to determine animation speed
+              const ratio = playerTrackTitle.scrollWidth / playerTrackTitle.clientWidth;
+              if (ratio >= 2) {
+                playerTrackTitle.classList.add('length-long');
+              } else if (ratio >= 1.5) {
+                playerTrackTitle.classList.add('length-medium');
+              }
+            }
+
+            // For track genre
+            playerTrackGenre.classList.remove('scrolling', 'length-medium', 'length-long');
+            const genreText = playerTrackGenre.textContent;
+            playerTrackGenre.setAttribute('data-content', genreText); // Set content for ::after
+
+            if (playerTrackGenre.scrollWidth > playerTrackGenre.clientWidth) {
+              playerTrackGenre.classList.add('scrolling');
+
+              // Calculate ratio to determine animation speed
+              const ratio = playerTrackGenre.scrollWidth / playerTrackGenre.clientWidth;
+              if (ratio >= 2) {
+                playerTrackGenre.classList.add('length-long');
+              } else if (ratio >= 1.5) {
+                playerTrackGenre.classList.add('length-medium');
+              }
+            }
+          }, 50); // Small timeout to ensure text is rendered
+
+          // Generate random colorful SVG as album art
+          const getRandomColor = () => {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+              color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+          };
+
+          // Create a random music-themed SVG
+          const bgColor = getRandomColor();
+          const fgColor = getRandomColor();
+          const svgPatterns = [
+            // Music note pattern
+            `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+              <rect width="200" height="200" fill="${bgColor}"/>
+              <path d="M80 30 L80 130 Q80 150 60 150 Q40 150 40 130 Q40 110 60 110 Q70 110 80 120 M120 50 L120 110 Q120 130 100 130 Q80 130 80 110 Q80 90 100 90 Q110 90 120 100" stroke="${fgColor}" stroke-width="8" fill="none"/>
+            </svg>`,
+            // Equalizer pattern
+            `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+              <rect width="200" height="200" fill="${bgColor}"/>
+              <rect x="40" y="40" width="20" height="120" fill="${fgColor}"/>
+              <rect x="80" y="80" width="20" height="80" fill="${fgColor}"/>
+              <rect x="120" y="20" width="20" height="140" fill="${fgColor}"/>
+              <rect x="160" y="60" width="20" height="100" fill="${fgColor}"/>
+            </svg>`,
+            // Vinyl record pattern
+            `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+              <rect width="200" height="200" fill="${bgColor}"/>
+              <circle cx="100" cy="100" r="80" fill="${fgColor}"/>
+              <circle cx="100" cy="100" r="30" fill="${bgColor}"/>
+              <circle cx="100" cy="100" r="10" fill="${fgColor}"/>
+            </svg>`
+          ];
+
+          // Select a random SVG pattern
+          const randomSvg = svgPatterns[Math.floor(Math.random() * svgPatterns.length)];
+
+          // Convert SVG to data URL
+          const svgDataUrl = 'data:image/svg+xml;base64,' + btoa(randomSvg);
+          playerAlbumArt.src = svgDataUrl;
+          playerAlbumArt.style.display = 'block';
+          playerAlbumArt.style.backgroundColor = 'transparent';
+
+          // Show loading indicator
+          playerPlayBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 fill-primary"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/></path></svg>'; // Loading icon
+
+          try {
+            // Get optimized audio URL using AudioLoader
+            const audioUrl = await audioLoader.getAudioUrl(track.directory, track.fileName);
+
+            // Set audio source and play
+            globalAudio.src = audioUrl;
+            await globalAudio.play();
+
+            playerPlayBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 fill-primary"><path d="M8 19c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2s-2 .9-2 2v10c0 1.1.9 2 2 2zm8-2V7c0-1.1-.9-2-2-2s-2 .9-2 2v10c0 1.1.9 2 2 2s2-.9 2-2z"></path></svg>'; // Pause icon
+            globalPlayer.classList.add('visible'); // Show the player
+            updateTrackButtons(); // Update all track buttons
+            scrollToCurrentTrackLyrics(); // Scroll to the lyrics
+
+            // Log which format is being used
+            console.log(`Playing ${track.fileName} from: ${audioUrl}`);
+          } catch (error) {
+            console.error('Error playing audio:', error);
+            playerPlayBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 fill-primary"><path d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18a1 1 0 0 0 0-1.69L9.54 5.98A.998.998 0 0 0 8 6.82z"></path></svg>'; // Reset to play icon
+          }
+
+          // Update play queue
+          updatePlayQueue();
+        }
+      }
+
+      // Play the next track in the queue
+      function playNextTrack() {
+        if (playQueue.length > 0) {
+          // If repeat mode is on and we're at the end, play the current track again
+          if (isRepeatMode && globalAudio.ended) {
+            globalAudio.currentTime = 0;
+            globalAudio.play()
+              .then(() => {
+                updateTrackButtons();
+              });
+            return;
+          }
+
+          // Find the current track index in the queue
+          let currentQueueIndex = -1;
+          if (currentTrackIndex >= 0) {
+            currentQueueIndex = playQueue.indexOf(currentTrackIndex);
+          }
+
+          // Get the next track index
+          let nextQueueIndex = (currentQueueIndex + 1) % playQueue.length;
+          let nextTrackIndex = playQueue[nextQueueIndex];
+
+          // Play the next track
+          playTrack(nextTrackIndex);
+        } else if (musicSamples.length > 0) {
+          // If queue is empty but we have samples, initialize and play the first track
+          updatePlayQueue();
+          if (playQueue.length > 0) {
+            playTrack(playQueue[0]);
+          }
+        }
+      }
+
+      // Play the previous track
+      function playPreviousTrack() {
+        if (playQueue.length > 0) {
+          // Move the last track to the front
+          const prevIndex = playQueue.pop();
+          playQueue.unshift(prevIndex);
+          // And also move the current first track to the front (which is now second)
+          const currentIndex = playQueue.shift();
+          playQueue.unshift(currentIndex);
+          // Play the previous track
+          playTrack(prevIndex);
+        }
+      }
+
+      // Function to add event listeners to track play buttons
+      function addPlayButtonListeners() {
+        document.querySelectorAll('.track-play-btn').forEach(button => {
+          button.addEventListener('click', function () {
+            // Find the index of this sample in the current musicSamples array
+            const sampleId = this.dataset.id;
+            const trackIndex = musicSamples.findIndex(s => s.id === sampleId);
+
+            // If this is the currently playing track, toggle play/pause
+            if (trackIndex === currentTrackIndex && globalAudio.src) {
+              if (globalAudio.paused) {
+                globalAudio.play()
+                  .then(() => {
+                    playerPlayBtn.innerHTML = '❚❚'; // Pause icon
+                    updateTrackButtons();
+                  });
+              } else {
+                globalAudio.pause();
+                playerPlayBtn.innerHTML = '▶'; // Play icon
+                updateTrackButtons();
+              }
+            } else {
+              // Show loading indicator on the button
+              this.innerHTML = '⏳️'; // Loading icon
+
+              // Otherwise play the new track
+              playTrack(trackIndex);
+            }
+          });
+        });
+      }
+
+      // Play/Pause button click event
+      playerPlayBtn.addEventListener('click', function () {
+        if (globalAudio.paused) {
+          if (globalAudio.src) {
+            globalAudio.play()
+              .then(() => {
+                playerPlayBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 fill-primary"><path d="M8 19c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2s-2 .9-2 2v10c0 1.1.9 2 2 2zm8-2V7c0-1.1-.9-2-2-2s-2 .9-2 2v10c0 1.1.9 2 2 2s2-.9 2-2z"></path></svg>'; // Pause icon
+                updateTrackButtons();
+              });
+          } else if (playQueue.length > 0) {
+            // If no track is loaded but we have a queue, play the first track
+            playTrack(playQueue[0]);
+          }
+        } else {
+          globalAudio.pause();
+          playerPlayBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 fill-primary"><path d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18a1 1 0 0 0 0-1.69L9.54 5.98A.998.998 0 0 0 8 6.82z"></path></svg>'; // Play icon
+          updateTrackButtons();
+        }
+      });
+
+      // Previous track button click event
+      playerPrevBtn.addEventListener('click', playPreviousTrack);
+
+      // Next track button click event
+      playerNextBtn.addEventListener('click', function () {
+        playNextTrack();
+      });
+
+      // Shuffle button click event
+      playerShuffleBtn.addEventListener('click', function () {
+        isShuffleMode = !isShuffleMode;
+        this.classList.toggle('active', isShuffleMode);
+
+        // If shuffle is turned on, turn off repeat
+        if (isShuffleMode && isRepeatMode) {
+          isRepeatMode = false;
+          playerRepeatBtn.classList.remove('active');
+          playerRepeatBtn.querySelector('.mode-indicator').textContent = '';
+        }
+
+        // Update the indicator text
+        const indicator = this.querySelector('.mode-indicator');
+        indicator.textContent = isShuffleMode ? 'ON' : '';
+        updatePlayQueue();
+      });
+
+      // Repeat button click event
+      playerRepeatBtn.addEventListener('click', function () {
+        isRepeatMode = !isRepeatMode;
+        this.classList.toggle('active', isRepeatMode);
+
+        // If repeat is turned on, turn off shuffle
+        if (isRepeatMode && isShuffleMode) {
+          isShuffleMode = false;
+          playerShuffleBtn.classList.remove('active');
+          playerShuffleBtn.querySelector('.mode-indicator').textContent = '';
+          // Since shuffle mode changed, update the play queue
+          updatePlayQueue();
+        }
+
+        // Update the indicator text
+        const indicator = this.querySelector('.mode-indicator');
+        indicator.textContent = isRepeatMode ? 'ON' : '';
+      });
+
+      // Update progress bar as audio plays
+      globalAudio.addEventListener('timeupdate', function () {
+        if (globalAudio.duration) {
+          const percent = (globalAudio.currentTime / globalAudio.duration) * 100;
+          playerProgressBar.style.width = percent + '%';
+          playerTimeDisplay.textContent = `${formatTime(globalAudio.currentTime)} / ${formatTime(globalAudio.duration)}`;
+        }
+      });
+
+      // Allow seeking by clicking on progress bar
+      playerProgressContainer.addEventListener('click', function (e) {
+        if (globalAudio.duration) {
+          const rect = playerProgressContainer.getBoundingClientRect();
+          const pos = (e.clientX - rect.left) / rect.width;
+          globalAudio.currentTime = pos * globalAudio.duration;
+        }
+      });
+
+      // Handle drag functionality for the progress handle
+      let isDragging = false;
+
+      playerProgressHandle.addEventListener('mousedown', function (e) {
+        isDragging = true;
+        e.preventDefault(); // Prevent text selection
+      });
+
+      document.addEventListener('mousemove', function (e) {
+        if (isDragging && globalAudio.duration) {
+          const rect = playerProgressContainer.getBoundingClientRect();
+          let pos = (e.clientX - rect.left) / rect.width;
+
+          // Clamp position between 0 and 1
+          pos = Math.max(0, Math.min(1, pos));
+
+          // Update progress bar visually during drag
+          playerProgressBar.style.width = (pos * 100) + '%';
+        }
+      });
+
+      document.addEventListener('mouseup', function (e) {
+        if (isDragging && globalAudio.duration) {
+          const rect = playerProgressContainer.getBoundingClientRect();
+          let pos = (e.clientX - rect.left) / rect.width;
+
+          // Clamp position between 0 and 1
+          pos = Math.max(0, Math.min(1, pos));
+
+          // Set the actual audio position
+          globalAudio.currentTime = pos * globalAudio.duration;
+          isDragging = false;
+        }
+      });
+
+      // Update track buttons when audio state changes
+      globalAudio.addEventListener('play', updateTrackButtons);
+      globalAudio.addEventListener('pause', updateTrackButtons);
+
+      // When a track ends, play the next one
+      globalAudio.addEventListener('ended', playNextTrack);
+
+      // Initialize the play queue
+      updatePlayQueue();
+
+      // Preload metadata for all audio files in the background
+      setTimeout(() => {
+        console.log('Preloading audio metadata...');
+        audioLoader.preloadAudio(musicSamples, (loaded, total) => {
+          console.log(`Preloaded ${loaded}/${total} audio files`);
+        });
+      }, 3000); // Start preloading after 3 seconds
+    });
+  </script>
+  <section class="page-header">
+
+  </section>
+
+  <section class="main-content">
+    <h1 id="">
+      <center> ACE-Step 1.5: Pushing the Boundaries of Open-Source Music Generation </center>
+    </h1>
+    <br>
+
+    <center> Junmin Gong, Song Yulin, Sean Zhao, Sen Wang, Shengyuan Xu, Joe Guo </center>
+    <br>
+    <div style="display: flex; justify-content: center; align-items: center; margin-top: -10px; margin-bottom: 30px;">
+      <a href="https://acestudio.ai" style="margin: 0 10px;">
+        <figure style="margin: 0;"><img src="raw/fig/acestudio_logo.png" alt="acestudio_logo" style="max-width: 230px;">
+        </figure>
+      </a>
+      <a href="https://www.stepfun.com/" style="margin: 0 10px;">
+        <figure style="margin: 0;"><img src="raw/fig/Logo_StepFun.png" alt="stepfun_logo" style="max-width: 230px;">
+        </figure>
+      </a>
+    </div>
+
+    <div style="text-align: center; margin-top: -20px;">
+      <a href="https://github.com/ace-step/ACE-Step-1.5" class="github-link" target="_blank" rel="noopener noreferrer"
+        style="margin-right: 20px;">
+        <svg fill="currentColor" height="28" width="28" viewBox="0 0 16 16">
+          <path
+            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
+          </path>
+        </svg>
+        <span style="font-size: 24px ;">GitHub</span>
+      </a>
+
+      <a href="https://huggingface.co/collections/ACE-Step/ace-step-15" class="huggingface-link" target="_blank"
+        rel="noopener noreferrer" style="margin-right: 20px;">
+        <svg fill="currentColor" height="28" width="28" viewBox="0 0 24 24">
+          <path
+            d="M16.781 3.277c2.997 1.704 4.844 4.851 4.844 8.258 0 .995-.155 1.955-.443 2.857a1.332 1.332 0 011.125.4 1.41 1.41 0 01.2 1.723c.204.165.352.385.428.632l.017.062c.06.222.12.69-.2 1.166.244.37.279.836.093 1.236-.255.57-.893 1.018-2.128 1.5l-.202.078-.131.048c-.478.173-.89.295-1.061.345l-.086.024c-.89.243-1.808.375-2.732.394-1.32 0-2.3-.36-2.923-1.067a9.852 9.852 0 01-3.18.018C9.778 21.647 8.802 22 7.494 22a11.249 11.249 0 01-2.541-.343l-.221-.06-.273-.08a16.574 16.574 0 01-1.175-.405c-1.237-.483-1.875-.93-2.13-1.501-.186-.4-.151-.867.093-1.236a1.42 1.42 0 01-.2-1.166c.069-.273.226-.516.447-.694a1.41 1.41 0 01.2-1.722c.233-.248.557-.391.917-.407l.078-.001a9.385 9.385 0 01-.44-2.85c0-3.407 1.847-6.554 4.844-8.258a9.822 9.822 0 019.687 0zM4.188 14.758c.125.687 2.357 2.35 2.14 2.707-.19.315-.796-.239-.948-.386l-.041-.04-.168-.147c-.561-.479-2.304-1.9-2.74-1.432-.43.46.119.859 1.055 1.42l.784.467.136.083c1.045.643 1.12.84.95 1.113-.188.295-3.07-2.1-3.34-1.083-.27 1.011 2.942 1.304 2.744 2.006-.2.7-2.265-1.324-2.685-.537-.425.79 2.913 1.718 2.94 1.725l.16.04.175.042c1.227.284 3.565.65 4.435-.604.673-.973.64-1.709-.248-2.61l-.057-.057c-.945-.928-1.495-2.288-1.495-2.288l-.017-.058-.025-.072c-.082-.22-.284-.639-.63-.584-.46.073-.798 1.21.12 1.933l.05.038c.977.721-.195 1.21-.573.534l-.058-.104-.143-.25c-.463-.799-1.282-2.111-1.739-2.397-.532-.332-.907-.148-.782.541zm14.842-.541c-.533.335-1.563 2.074-1.94 2.751a.613.613 0 01-.687.302.436.436 0 01-.176-.098.303.303 0 01-.049-.06l-.014-.028-.008-.02-.007-.019-.003-.013-.003-.017a.289.289 0 01-.004-.048c0-.12.071-.266.25-.427.026-.024.054-.047.084-.07l.047-.036c.022-.016.043-.032.063-.049.883-.71.573-1.81.131-1.917l-.031-.006-.056-.004a.368.368 0 00-.062.006l-.028.005-.042.014-.039.017-.028.015-.028.019-.036.027-.023.02c-.173.158-.273.428-.31.542l-.016.054s-.53 1.309-1.439 2.234l-.054.054c-.365.358-.596.69-.702 1.018-.143.437-.066.868.21 1.353.055.097.117.195.187.296.882 1.275 3.282.876 4.494.59l.286-.07.25-.074c.276-.084.736-.233 1.2-.42l.188-.077.065-.028.064-.028.124-.056.081-.038c.529-.252.964-.543.994-.827l.001-.036a.299.299 0 00-.037-.139c-.094-.176-.271-.212-.491-.168l-.045.01c-.044.01-.09.024-.136.04l-.097.035-.054.022c-.559.23-1.238.705-1.607.745h.006a.452.452 0 01-.05.003h-.024l-.024-.003-.023-.005c-.068-.016-.116-.06-.14-.142a.22.22 0 01-.005-.1c.062-.345.958-.595 1.713-.91l.066-.028c.528-.224.97-.483.985-.832v-.04a.47.47 0 00-.016-.098c-.048-.18-.175-.251-.36-.251-.785 0-2.55 1.36-2.92 1.36-.025 0-.048-.007-.058-.024a.6.6 0 01-.046-.088c-.1-.238.068-.462 1.06-1.066l.209-.126c.538-.32 1.01-.588 1.341-.831.29-.212.475-.406.503-.6l.003-.028c.008-.113-.038-.227-.147-.344a.266.266 0 00-.07-.054l-.034-.015-.013-.005a.403.403 0 00-.13-.02c-.162 0-.369.07-.595.18-.637.313-1.431.952-1.826 1.285l-.249.215-.033.033c-.08.078-.288.27-.493.386l-.071.037-.041.019a.535.535 0 01-.122.036h.005a.346.346 0 01-.031.003l.01-.001-.013.001c-.079.005-.145-.021-.19-.095a.113.113 0 01-.014-.065c.027-.465 2.034-1.991 2.152-2.642l.009-.048c.1-.65-.271-.817-.791-.493zM11.938 2.984c-4.798 0-8.688 3.829-8.688 8.55 0 .692.083 1.364.24 2.008l.008-.009c.252-.298.612-.46 1.017-.46.355.008.699.117.993.312.22.14.465.384.715.694.261-.372.69-.598 1.15-.605.852 0 1.367.728 1.562 1.383l.047.105.06.127c.192.396.595 1.139 1.143 1.68 1.06 1.04 1.324 2.115.8 3.266a8.865 8.865 0 002.024-.014c-.505-1.12-.26-2.17.74-3.186l.066-.066c.695-.684 1.157-1.69 1.252-1.912.195-.655.708-1.383 1.56-1.383.46.007.889.233 1.15.605.25-.31.495-.553.718-.694a1.87 1.87 0 01.99-.312c.357 0 .682.126.925.36.14-.61.215-1.245.215-1.898 0-4.722-3.89-8.55-8.687-8.55zm1.857 8.926l.439-.212c.553-.264.89-.383.89.152 0 1.093-.771 3.208-3.155 3.262h-.184c-2.325-.052-3.116-2.06-3.156-3.175l-.001-.087c0-1.107 1.452.586 3.25.586.716 0 1.379-.272 1.917-.526zm4.017-3.143c.45 0 .813.358.813.8 0 .441-.364.8-.813.8a.806.806 0 01-.812-.8c0-.442.364-.8.812-.8zm-11.624 0c.448 0 .812.358.812.8 0 .441-.364.8-.812.8a.806.806 0 01-.813-.8c0-.442.364-.8.813-.8zm7.79-.841c.32-.384.846-.54 1.33-.394.483.146.83.564.878 1.06.048.495-.212.97-.659 1.203-.322.168-.447-.477-.767-.585l.002-.003c-.287-.098-.772.362-.925.079a1.215 1.215 0 01.14-1.36zm-4.323 0c.322.384.377.92.14 1.36-.152.283-.64-.177-.925-.079l.003.003c-.108.036-.194.134-.273.24l-.118.165c-.11.15-.22.262-.377.18a1.226 1.226 0 01-.658-1.204c.048-.495.395-.913.878-1.059a1.262 1.262 0 011.33.394z">
+          </path>
+        </svg>
+        <span style="font-size: 24px;">Hugging Face</span>
+      </a>
+
+      <span class="arxiv-link" style="margin-right: 20px; opacity: 0.45; cursor: not-allowed;" title="Coming Soon">
+        <svg fill="currentColor" height="28" width="28" viewBox="0 0 512 512">
+          <path
+            d="M128 0C74.98 0 32 42.98 32 96v320c0 53.02 42.98 96 96 96h256c53.02 0 96-42.98 96-96V96c0-53.02-42.98-96-96-96H128zM400 432H112c-8.836 0-16-7.164-16-16V96c0-8.838 7.164-16 16-16h288c8.836 0 16 7.162 16 16v320c0 8.836-7.164 16-16 16zM192 128h-48c-8.836 0-16 7.162-16 16v32c0 8.836 7.164 16 16 16h48c8.836 0 16-7.164 16-16v-32c0-8.838-7.164-16-16-16zm176 0h-48c-8.836 0-16 7.162-16 16v32c0 8.836 7.164 16 16 16h48c8.836 0 16-7.164 16-16v-32c0-8.838-7.164-16-16-16zM192 224h-48c-8.836 0-16 7.164-16 16v32c0 8.836 7.164 16 16 16h48c8.836 0 16-7.164 16-16v-32c0-8.836-7.164-16-16-16zm176 0h-48c-8.836 0-16 7.164-16 16v32c0 8.836 7.164 16 16 16h48c8.836 0 16-7.164 16-16v-32c0-8.836-7.164-16-16-16zM192 320h-48c-8.836 0-16 7.164-16 16v32c0 8.836 7.164 16 16 16h48c8.836 0 16-7.164 16-16v-32c0-8.836-7.164-16-16-16z" />
+        </svg>
+        <span style="font-size: 24px;">Paper <span style="font-size: 14px; color: #999;">(soon)</span></span>
+      </span>
+
+      <a href="https://huggingface.co/spaces/ACE-Step/Ace-Step-v1.5" class="huggingface-link" target="_blank"
+        rel="noopener noreferrer">
+        <svg class="size-8 mr-1.5 dark:mr-2 dark:drop-shadow-md" xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false" role="img" width="28"
+          height="28" preserveAspectRatio="xMidYMid meet" viewBox="0 0 39 40">
+          <path
+            d="M6.3712 2.04427C3.7183 2.04427 1.56771 4.19486 1.56771 6.84776V18.3546V18.6544V32.7341C1.56771 35.3868 3.71818 37.5377 6.3712 37.5377H17.878H20.7507H32.2575C34.9104 37.5377 37.0612 35.387 37.0612 32.7341V21.6204C37.0612 20.177 36.4252 18.8839 35.4189 18.004C36.4576 16.3895 37.0612 14.4666 37.0612 12.4046C37.0612 6.68274 32.4225 2.04427 26.7007 2.04427C24.6388 2.04427 22.7159 2.64776 21.1014 3.68647C20.2214 2.6802 18.9282 2.04427 17.4849 2.04427H6.3712Z"
+            fill="black" class="stroke-white dark:stroke-white/10" stroke-width="3.07552"></path>
+          <path
+            d="M9.56855 23.5001C8.8406 23.5001 8.25047 24.0902 8.25047 24.8182V29.5361C8.25047 30.2641 8.8406 30.8542 9.56855 30.8542H14.2864C15.0144 30.8542 15.6045 30.2641 15.6045 29.5361V24.8182C15.6045 24.0902 15.0143 23.5001 14.2864 23.5001H9.56855Z"
+            fill="#FF3270"></path>
+          <path
+            d="M24.3409 23.5001C23.613 23.5001 23.0228 24.0902 23.0228 24.8182V29.5361C23.0228 30.2641 23.613 30.8542 24.3409 30.8542H29.0588C29.7868 30.8542 30.3769 30.2641 30.3769 29.5361V24.8182C30.3769 24.0902 29.7868 23.5001 29.0588 23.5001H24.3409Z"
+            fill="#861FFF"></path>
+          <path
+            d="M9.56855 8.72815C8.8406 8.72815 8.25047 9.31827 8.25047 10.0462V14.7641C8.25047 15.4921 8.8406 16.0822 9.56855 16.0822H14.2864C15.0144 16.0822 15.6045 15.4921 15.6045 14.7641V10.0462C15.6045 9.31827 15.0143 8.72815 14.2864 8.72815H9.56855Z"
+            fill="#097EFF"></path>
+          <path
+            d="M26.6999 8.72815C24.6692 8.72815 23.0228 10.3744 23.0228 12.4052C23.0228 14.4359 24.6692 16.0822 26.6999 16.0822C28.7306 16.0822 30.3769 14.4359 30.3769 12.4052C30.3769 10.3744 28.7306 8.72815 26.6999 8.72815Z"
+            fill="#FFD702"></path>
+        </svg>
+        <span style="font-size: 24px;">Demo</span>
+      </a>
+    </div>
+
+    <h2 id="abstract" style="text-align: center; font-size: 1.8rem; margin: 2rem 0 1.5rem;">📝 Abstract<a name="abstract"></a></h2>
+
+    <p style="text-align: justify;">
+      🚀 We present ACE-Step v1.5, a highly efficient <strong>open-source</strong> music foundation model that brings
+      commercial-grade generation to consumer hardware. On commonly used evaluation metrics, ACE-Step v1.5 achieves
+      quality <strong>beyond most commercial music models</strong> while remaining extremely fast—<strong>under 2 seconds</strong>
+      per full song on an A100 and <strong>under 10 seconds</strong> on an RTX 3090. The model runs locally with less than 4GB of VRAM, 
+      and supports lightweight personalization: users can train a LoRA from just a few songs to capture their own style.
+    </p>
+
+    <p style="text-align: justify;">
+      🌉 At its core lies a novel hybrid architecture where the Language Model (LM) functions as an omni-capable
+      planner: it transforms simple user queries into comprehensive song blueprints—scaling from short loops to
+      10-minute compositions—while synthesizing metadata, lyrics, and captions via Chain-of-Thought to guide the
+      Diffusion Transformer (DiT). ⚡ Uniquely, this alignment is achieved through intrinsic reinforcement learning
+      relying solely on the model's internal mechanisms, thereby eliminating the biases inherent in external reward
+      models or human preferences. 🎚️
+    </p>
+
+    <p style="text-align: justify;">
+      🔮 Beyond standard synthesis, ACE-Step v1.5 unifies precise stylistic control with versatile editing
+      capabilities—such as cover generation, repainting, and vocal-to-BGM conversion—while maintaining strict adherence
+      to prompts across 50+ languages. This paves the way for powerful tools that seamlessly integrate into the creative
+      workflows of music artists, producers, and content creators. 🎸
+    </p>
+
+    <!-- Evaluation Table + Speed Chart -->
+    <style>
+      .eval-section {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 2rem;
+        margin: 2rem auto;
+        max-width: 1400px;
+        padding: 0 1rem;
+        flex-wrap: wrap;
+      }
+      
+      .latex-table-container {
+        flex: 1;
+        min-width: 700px;
+        text-align: center;
+      }
+      
+      .latex-table-wrapper {
+        display: inline-block;
+        overflow-x: auto;
+        text-align: center;
+      }
+      
+      .latex-table {
+        border-collapse: collapse;
+        font-family: 'Times New Roman', 'CMU Serif', Georgia, serif;
+        font-size: 13px;
+        line-height: 1.4;
+        background: transparent;
+      }
+      
+      .latex-table thead tr:first-child th {
+        border-top: 1.5px solid #000;
+        padding-top: 8px;
+      }
+      
+      .latex-table thead tr:last-child th {
+        border-bottom: 0.8px solid #000;
+        padding-bottom: 6px;
+      }
+      
+      .latex-table th {
+        padding: 4px 10px;
+        font-weight: normal;
+        text-align: center;
+        vertical-align: bottom;
+        color: #000;
+      }
+      
+      .latex-table th.model-header {
+        text-align: left;
+        min-width: 100px;
+      }
+      
+      .latex-table th.group-header {
+        font-weight: 600;
+        padding-bottom: 2px;
+        letter-spacing: 0.02em;
+      }
+      
+      .latex-table th[rowspan] {
+        vertical-align: middle;
+      }
+      
+      .latex-table th.sub-header {
+        font-size: 12px;
+        color: #333;
+      }
+      
+      .latex-table tbody tr:first-child td {
+        padding-top: 6px;
+      }
+      
+      .latex-table tbody tr.midrule td {
+        border-top: 0.5px solid #666;
+        padding-top: 6px;
+      }
+      
+      .latex-table tbody tr:last-child td {
+        border-bottom: 1.5px solid #000;
+        padding-bottom: 8px;
+      }
+      
+      .latex-table td {
+        padding: 3px 10px;
+        text-align: center;
+        color: #000;
+      }
+      
+      .latex-table td.model-cell {
+        text-align: left;
+        font-style: normal;
+      }
+      
+      .latex-table .best {
+        font-weight: 700;
+      }
+      
+      .latex-table .second {
+        text-decoration: underline;
+      }
+      
+      .latex-table tr.ours td {
+        background: #f5f5f5;
+      }
+      
+      .latex-table tr.ours td.model-cell {
+        font-weight: 700;
+      }
+      
+      .latex-caption {
+        text-align: center;
+        font-family: 'Times New Roman', Georgia, serif;
+        font-size: 13px;
+        color: #333;
+        margin-top: 10px;
+      }
+      
+      .latex-caption strong {
+        font-weight: 600;
+      }
+      
+      /* Speed Chart - Academic Style */
+      .speed-chart {
+        width: 340px;
+        font-family: 'Times New Roman', Georgia, serif;
+        align-self: center;
+      }
+      
+      .speed-chart-title {
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        color: #000;
+        padding-bottom: 8px;
+        border-bottom: 1.5px solid #000;
+        margin-bottom: 1rem;
+      }
+      
+      .speed-chart-subtitle {
+        font-size: 12px;
+        text-align: center;
+        color: #555;
+        margin-bottom: 1.2rem;
+        font-style: italic;
+      }
+      
+      .speed-bars-vertical {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        height: 320px;
+        padding: 0 15px;
+        border-bottom: 1.5px solid #000;
+        margin-bottom: 10px;
+      }
+      
+      .speed-bar-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+      }
+      
+      .speed-bar-value {
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #333;
+      }
+      
+      .speed-bar-vertical {
+        width: 48px;
+        background: #9ca3af;
+        position: relative;
+      }
+      
+      .speed-bar-vertical.ours {
+        background: #1f2937;
+      }
+      
+      .speed-bar-name {
+        font-size: 11px;
+        text-align: center;
+        margin-top: 10px;
+        color: #333;
+        line-height: 1.3;
+      }
+      
+      .speed-bar-name.ours {
+        font-weight: 700;
+      }
+      
+      .speed-summary {
+        text-align: center;
+        padding-top: 1.2rem;
+        margin-top: 0.8rem;
+        border-top: 1px solid #ccc;
+      }
+      
+      .speed-summary-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #000;
+      }
+      
+      .speed-summary-label {
+        font-size: 12px;
+        color: #555;
+        margin-top: 4px;
+      }
+      
+      @media (max-width: 1100px) {
+        .eval-section {
+          flex-direction: column;
+          align-items: center;
+        }
+        .latex-table-container {
+          min-width: auto;
+          width: 100%;
+        }
+        .speed-chart {
+          margin-top: 1.5rem;
+        }
+      }
+      
+      @media (max-width: 900px) {
+        .latex-table {
+          font-size: 11px;
+        }
+        .latex-table th, .latex-table td {
+          padding: 3px 6px;
+        }
+      }
+    </style>
+    
+    <div class="eval-section">
+      <div class="latex-table-container">
+        <div class="latex-table-wrapper">
+          <table class="latex-table">
+        <thead>
+          <tr>
+            <th rowspan="2" class="model-header">Model</th>
+            <th colspan="4" class="group-header">AudioBox ↑</th>
+            <th colspan="5" class="group-header">SongEval ↑</th>
+            <th rowspan="2" class="group-header">Style<br>Align ↑</th>
+            <th rowspan="2" class="group-header">Lyric<br>Align ↑</th>
+          </tr>
+          <tr>
+            <th class="sub-header">CE</th>
+            <th class="sub-header">CU</th>
+            <th class="sub-header">PC</th>
+            <th class="sub-header">PQ</th>
+            <th class="sub-header">Coh.</th>
+            <th class="sub-header">Mus.</th>
+            <th class="sub-header">Mem.</th>
+            <th class="sub-header">Cla.</th>
+            <th class="sub-header">Nat.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="model-cell">Udio-v1.5</td>
+            <td>7.45</td>
+            <td>7.65</td>
+            <td>6.15</td>
+            <td>8.03</td>
+            <td>4.15</td>
+            <td>3.96</td>
+            <td>4.09</td>
+            <td>3.93</td>
+            <td>3.86</td>
+            <td>34.9</td>
+            <td>24.8</td>
+          </tr>
+          <tr>
+            <td class="model-cell">Suno-v4.5</td>
+            <td>7.63</td>
+            <td>7.85</td>
+            <td>6.22</td>
+            <td>8.25</td>
+            <td>4.64</td>
+            <td>4.51</td>
+            <td>4.63</td>
+            <td>4.53</td>
+            <td>4.49</td>
+            <td>40.5</td>
+            <td>32.7</td>
+          </tr>
+          <tr>
+            <td class="model-cell">Suno-v5</td>
+            <td>7.69</td>
+            <td>7.87</td>
+            <td class="second">6.51</td>
+            <td>8.29</td>
+            <td class="second">4.72</td>
+            <td>4.62</td>
+            <td>4.71</td>
+            <td>4.63</td>
+            <td>4.56</td>
+            <td class="best">46.8</td>
+            <td class="best">34.2</td>
+          </tr>
+          <tr>
+            <td class="model-cell">Mureka-V7.6</td>
+            <td>7.44</td>
+            <td>7.71</td>
+            <td>6.35</td>
+            <td>8.13</td>
+            <td>4.43</td>
+            <td>4.29</td>
+            <td>4.35</td>
+            <td>4.29</td>
+            <td>4.21</td>
+            <td>36.2</td>
+            <td>22.4</td>
+          </tr>
+          <tr>
+            <td class="model-cell">MinMax-2.0</td>
+            <td class="second">7.71</td>
+            <td class="second">7.95</td>
+            <td>6.42</td>
+            <td class="second">8.38</td>
+            <td>4.61</td>
+            <td>4.51</td>
+            <td>4.59</td>
+            <td>4.50</td>
+            <td>4.41</td>
+            <td>43.1</td>
+            <td>29.5</td>
+          </tr>
+          <tr class="midrule">
+            <td class="model-cell">Yue</td>
+            <td>6.58</td>
+            <td>7.29</td>
+            <td>4.95</td>
+            <td>7.39</td>
+            <td>3.01</td>
+            <td>2.80</td>
+            <td>2.85</td>
+            <td>2.79</td>
+            <td>2.82</td>
+            <td>26.8</td>
+            <td>−4.6</td>
+          </tr>
+          <tr>
+            <td class="model-cell">ACE-Step 1.0</td>
+            <td>7.22</td>
+            <td>7.52</td>
+            <td>6.50</td>
+            <td>7.76</td>
+            <td>3.99</td>
+            <td>3.73</td>
+            <td>3.85</td>
+            <td>3.78</td>
+            <td>3.68</td>
+            <td>28.5</td>
+            <td>0.9</td>
+          </tr>
+          <tr>
+            <td class="model-cell">LeVo</td>
+            <td>7.61</td>
+            <td>7.78</td>
+            <td>5.92</td>
+            <td>8.31</td>
+            <td>3.55</td>
+            <td>3.35</td>
+            <td>3.32</td>
+            <td>3.31</td>
+            <td>3.20</td>
+            <td>29.4</td>
+            <td>−1.2</td>
+          </tr>
+          <tr>
+            <td class="model-cell">DiffRhythm 2</td>
+            <td>7.25</td>
+            <td>7.61</td>
+            <td>6.33</td>
+            <td>7.99</td>
+            <td>3.99</td>
+            <td>3.79</td>
+            <td>3.97</td>
+            <td>3.82</td>
+            <td>3.66</td>
+            <td>32.1</td>
+            <td>3.8</td>
+          </tr>
+          <tr>
+            <td class="model-cell">HeartMuLa</td>
+            <td>7.66</td>
+            <td>7.89</td>
+            <td>6.15</td>
+            <td>8.25</td>
+            <td>4.68</td>
+            <td>4.55</td>
+            <td>4.69</td>
+            <td>4.55</td>
+            <td>4.45</td>
+            <td>31.7</td>
+            <td>28.6</td>
+          </tr>
+          <tr class="ours">
+            <td class="model-cell">ACE-Step 1.5</td>
+            <td>7.42</td>
+            <td class="best">8.09</td>
+            <td>6.47</td>
+            <td class="best">8.35</td>
+            <td class="best">4.72</td>
+            <td class="best">4.67</td>
+            <td class="best">4.72</td>
+            <td class="best">4.66</td>
+            <td class="best">4.59</td>
+            <td class="second">39.1</td>
+            <td class="second">26.3</td>
+          </tr>
+        </tbody>
+        </table>
+      </div>
+        <p class="latex-caption">
+          <strong>Table 1:</strong> Comparison with commercial (top) and open-source (bottom) music generation models. 
+          <strong>Bold</strong> = best, <span style="text-decoration:underline">underline</span> = second best. ↑ higher is better.
+        </p>
+      </div>
+      
+      <!-- Speed Comparison Chart -->
+      <div class="speed-chart">
+        <div class="speed-chart-title">Generation Speed</div>
+        <div class="speed-chart-subtitle">4-min song on A100</div>
+        
+        <div class="speed-bars-vertical">
+          <div class="speed-bar-item">
+            <div class="speed-bar-value">2s</div>
+            <div class="speed-bar-vertical ours" style="height: 3px;"></div>
+            <div class="speed-bar-name ours">Ours</div>
+          </div>
+          <div class="speed-bar-item">
+            <div class="speed-bar-value">20s</div>
+            <div class="speed-bar-vertical" style="height: 27px;"></div>
+            <div class="speed-bar-name">A few<br>models</div>
+          </div>
+          <div class="speed-bar-item">
+            <div class="speed-bar-value">2min</div>
+            <div class="speed-bar-vertical" style="height: 160px;"></div>
+            <div class="speed-bar-name">Some<br>models</div>
+          </div>
+          <div class="speed-bar-item">
+            <div class="speed-bar-value">4min</div>
+            <div class="speed-bar-vertical" style="height: 320px;"></div>
+            <div class="speed-bar-name">Most<br>models</div>
+          </div>
+        </div>
+        
+        <div class="speed-summary">
+          <div class="speed-summary-value">10–120× faster</div>
+          <div class="speed-summary-label">than alternatives</div>
+        </div>
+      </div>
+    </div>
+
+    <br>
+    <style>
+      figure {
+        text-align: center;
+        margin: 0;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+
+      figcaption {
+        margin-top: 8px;
+        font-size: 14px;
+        color: #555;
+      }
+
+      .gallery {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+    </style>
+
+    <div class="fixed-toggle-container">
+      <button id="toggle-all-lyrics" class="toggle-all-button">📖 Collapse All Lyrics</button>
+    </div>
+    
+    <h2 id="BaselineQuality" style="text-align: center; font-size: 1.8rem; margin: 2rem 0 1.5rem;">🎵 Examples<a name="BaselineQuality"></a></h2>
+    <div style="border-left: 4px solid #097EFF; padding-left: 15px; margin-bottom: 20px;">
+    </div>
+
+    <table>
+      <!-- </colgroup> -->
+      <thead>
+        <tr>
+          <th class="tg-0lax">Caption</th>
+          <th class="tg-0lax">Lyrics</th>
+          <th class="tg-0lax">ACE-Step generated</th>
+        </tr>
+      </thead>
+      <tbody id="baseline-quality">
+        <!-- Table rows will be dynamically generated by JavaScript -->
+      </tbody>
+    </table>
+    </div>
+    <!-- Framework & Application Section -->
+    <h2 style="text-align: center; font-size: 1.8rem; margin: 2rem 0 1.5rem;">🏗️ Framework & Application</h2>
+    <div style="display: flex; justify-content: center; gap: 2.5rem; flex-wrap: wrap; margin: 1.5rem auto; max-width: 1400px; padding: 0 1rem;">
+      <figure style="flex: 1; min-width: 500px; max-width: 680px; margin: 0;">
+        <img src="raw/fig/ACE-Step_framework.png" alt="ACE-Step Framework" style="width: 100%; height: auto;">
+      </figure>
+      <figure style="flex: 1; min-width: 500px; max-width: 680px; margin: 0;">
+        <img src="raw/fig/application_map.png" alt="Application Map" style="width: 100%; height: auto;">
+      </figure>
+
+  
+    </div>
+
+  <!-- Global Player -->
+  <div id="global-player">
+    <div class="player-track-info">
+      <div class="album-art">
+        <img id="player-album-art"
+          src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+          alt="Album Art"
+          style="width: 50px; height: 50px; border-radius: 4px; margin-right: 10px; background-color: #000000;">
+      </div>
+      <div class="track-details">
+        <div class="player-track-title"></div>
+        <div class="player-track-genre"></div>
+      </div>
+    </div>
+
+    <div class="player-controls">
+      <button id="player-prev-btn" class="player-btn" title="Previous Track"><svg xmlns="http://www.w3.org/2000/svg"
+          width="2em" height="2em" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 fill-primary">
+          <g>
+            <path
+              d="M8 17V7a.97.97 0 0 0-.287-.713A.97.97 0 0 0 7 6a.97.97 0 0 0-.713.287A.97.97 0 0 0 6 7v10q0 .424.287.712Q6.576 18 7 18q.424 0 .713-.288A.97.97 0 0 0 8 17m11-.875v-8.25q0-.45-.3-.725a1 1 0 0 0-.7-.275q-.125 0-.275.025a.6.6 0 0 0-.275.125l-6.2 4.15q-.225.15-.338.362A1 1 0 0 0 10.8 12q0 .25.112.463a1 1 0 0 0 .338.362l6.2 4.15a.6.6 0 0 0 .275.125q.15.025.275.025.4 0 .7-.275t.3-.725">
+            </path>
+          </g>
+        </svg></button>
+      <button id="player-play-btn" class="player-btn player-play-btn" title="Play/Pause"><svg
+          xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24" fill="currentColor"
+          class="w-6 h-6 fill-primary">
+          <path d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18a1 1 0 0 0 0-1.69L9.54 5.98A.998.998 0 0 0 8 6.82z">
+          </path>
+        </svg></button>
+      <button id="player-next-btn" class="player-btn" title="Next Track"><svg xmlns="http://www.w3.org/2000/svg"
+          width="2em" height="2em" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 fill-primary">
+          <g>
+            <path
+              d="M16.5 17V7q0-.424.288-.713A.97.97 0 0 1 17.5 6q.424 0 .712.287.288.288.288.713v10q0 .424-.288.712A.97.97 0 0 1 17.5 18a.97.97 0 0 1-.712-.288A.97.97 0 0 1 16.5 17m-11-.875v-8.25q0-.45.3-.725t.7-.275q.125 0 .275.025a.6.6 0 0 1 .275.125l6.2 4.15q.225.15.338.362A1 1 0 0 1 13.7 12q0 .25-.112.463a1 1 0 0 1-.338.362l-6.2 4.15a.6.6 0 0 1-.275.125 2 2 0 0 1-.275.025q-.4 0-.7-.275t-.3-.725">
+            </path>
+          </g>
+        </svg></button>
+      <button id="player-shuffle-btn" class="player-btn" title="Shuffle"><svg xmlns="http://www.w3.org/2000/svg"
+          width="2em" height="2em" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 fill-primary">
+          <path
+            d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z">
+          </path>
+        </svg> <span class="mode-indicator"></span></button>
+      <button id="player-repeat-btn" class="player-btn" title="Repeat"><svg xmlns="http://www.w3.org/2000/svg"
+          width="2em" height="2em" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 fill-primary">
+          <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"></path>
+        </svg> <span class="mode-indicator"></span></button>
+    </div>
+
+    <div class="player-progress-container">
+      <div class="player-progress-bar">
+        <div class="player-progress-handle"></div>
+      </div>
+    </div>
+
+    <div class="player-time-display">01:00 / 04:00</div>
+
+    <!-- Hidden audio element for the global player -->
+    <audio id="global-audio" preload="none"></audio>
+  </div>
+  <!-- Limitations Section - Hidden -->
+  <section class="main-content" style="display: none;">
+    <h2 id="limitations" style="text-align: center;">⚠️ Limitations & Future Improvements 🔮</h2>
+    <div style="border-left: 4px solid #FF3270; padding-left: 15px; margin-bottom: 20px;">
+      <ol>
+        <li><strong>🎲 Output Inconsistency:</strong> Highly sensitive to random seeds and input duration, leading to
+          varied "gacha-style" results.</li>
+        <li><strong>🎵 Style-specific Weaknesses:</strong> Underperforms on certain genres (e.g. Chinese rap/zh_rap)
+          Limited style adherence and musicality ceiling</li>
+        <li><strong>🔄 Continuity Artifacts:</strong> Unnatural transitions in repainting/extend operations</li>
+        <li><strong>🎤 Vocal Quality:</strong> Coarse vocal synthesis lacking nuance</li>
+        <li><strong>🎛️ Control Granularity:</strong> Needs finer-grained musical parameter control</li>
+        <li><strong>🌐 Multilingual Lyrics Compliance:</strong> Improved support for lyrics in multiple languages,
+          enhancing accuracy and naturalness.</li>
+      </ol>
+    </div>
+  </section>
+</body>
+
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Performance Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .test-container {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .results {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f5f5f5;
+      border-radius: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .loading {
+      color: #888;
+      font-style: italic;
+    }
+    .button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .test-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .test-option {
+      flex: 1;
+      min-width: 200px;
+    }
+    .checkbox-group {
+      margin-top: 15px;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .checkbox-label input {
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Audio Performance Test</h1>
+  <p>This page tests the loading and decoding performance differences between FLAC, MP3, and Opus audio formats.</p>
+  
+  <div class="test-container">
+    <h2>Test Configuration</h2>
+    
+    <div class="test-options">
+      <div class="test-option">
+        <p>Select a sample to test:</p>
+        <select id="sample-selector">
+          <option value="DiverseStyles/acid_house">Acid House</option>
+          <option value="DiverseStyles/alternative_rock">Alternative Rock</option>
+          <option value="DiverseStyles/cyberpunk">Cyberpunk</option>
+          <option value="MultipleLang/jpop">J-Pop</option>
+          <option value="VocalTechniques/acappella">Acappella</option>
+        </select>
+      </div>
+      
+      <div class="test-option">
+        <p>Number of times to run the test:</p>
+        <input type="number" id="test-runs" value="3" min="1" max="10">
+      </div>
+    </div>
+    
+    <div class="checkbox-group">
+      <p>Optimizations to test:</p>
+      <label class="checkbox-label">
+        <input type="checkbox" id="use-worker" checked>
+        Use Web Worker for decoding
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="pre-decode" checked>
+        Pre-initialize decoder
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="progressive-loading" checked>
+        Use progressive loading
+      </label>
+    </div>
+    
+    <button id="start-test" class="button">Start Test</button>
+  </div>
+  
+  <div class="test-container">
+    <h2>Test Results</h2>
+    <div id="results" class="results">
+      <p>No tests run yet. Click "Start Test" to begin.</p>
+    </div>
+    <table id="results-table" style="display: none;">
+      <thead>
+        <tr>
+          <th>Format</th>
+          <th>File Size</th>
+          <th>Avg. Load Time</th>
+          <th>Avg. Decode Time</th>
+          <th>Total Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr id="flac-results">
+          <td>FLAC</td>
+          <td id="flac-size">-</td>
+          <td id="flac-load">-</td>
+          <td id="flac-decode">-</td>
+          <td id="flac-total">-</td>
+        </tr>
+        <tr id="mp3-results">
+          <td>MP3</td>
+          <td id="mp3-size">-</td>
+          <td id="mp3-load">-</td>
+          <td id="mp3-decode">-</td>
+          <td id="mp3-total">-</td>
+        </tr>
+        <tr id="opus-results">
+          <td>Opus</td>
+          <td id="opus-size">-</td>
+          <td id="opus-load">-</td>
+          <td id="opus-decode">-</td>
+          <td id="opus-total">-</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Include the audio loader script -->
+  <script src="audio-loader.js"></script>
+  <script src="decoder-worker.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const startTestButton = document.getElementById('start-test');
+      const sampleSelector = document.getElementById('sample-selector');
+      const testRunsInput = document.getElementById('test-runs');
+      const resultsDiv = document.getElementById('results');
+      const resultsTable = document.getElementById('results-table');
+      const useWorkerCheckbox = document.getElementById('use-worker');
+      const preDecodeCheckbox = document.getElementById('pre-decode');
+      const progressiveLoadingCheckbox = document.getElementById('progressive-loading');
+      
+      // Check if OfflineAudioContext is available
+      const hasOfflineAudioContext = typeof OfflineAudioContext !== 'undefined';
+      
+      // Audio context for decoding
+      let audioContext = null;
+      
+      // Test results
+      let flacResults = { loadTimes: [], decodeTimes: [], totalTimes: [] };
+      let mp3Results = { loadTimes: [], decodeTimes: [], totalTimes: [] };
+      let opusResults = { loadTimes: [], decodeTimes: [], totalTimes: [] };
+      let flacSize = 0;
+      let mp3Size = 0;
+      let opusSize = 0;
+      
+      // Show warning if OfflineAudioContext is not available
+      if (!hasOfflineAudioContext) {
+        resultsDiv.innerHTML = `
+          <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+            <strong>Warning:</strong> OfflineAudioContext is not available in your browser.
+            Worker-based decoding will fall back to main thread decoding.
+          </div>
+          <p>No tests run yet. Click "Start Test" to begin.</p>
+        `;
+      }
+      
+      // Initialize audio context when needed
+      function getAudioContext() {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return audioContext;
+      }
+      
+      // Pre-initialize decoder if option is checked
+      if (preDecodeCheckbox.checked) {
+        getAudioContext();
+        // Create a small silent buffer to initialize the decoder
+        const buffer = audioContext.createBuffer(2, 44100, 44100);
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start(0);
+        source.stop(0.001);
+        console.log('Audio decoder pre-initialized');
+      }
+      
+      startTestButton.addEventListener('click', async function() {
+        // Reset results
+        flacResults = { loadTimes: [], decodeTimes: [], totalTimes: [] };
+        mp3Results = { loadTimes: [], decodeTimes: [], totalTimes: [] };
+        opusResults = { loadTimes: [], decodeTimes: [], totalTimes: [] };
+        flacSize = 0;
+        mp3Size = 0;
+        opusSize = 0;
+        
+        // Update UI
+        startTestButton.disabled = true;
+        resultsDiv.innerHTML = '<p class="loading">Running tests...</p>';
+        resultsTable.style.display = 'none';
+        
+        // Get test configuration
+        const samplePath = sampleSelector.value;
+        const numRuns = parseInt(testRunsInput.value);
+        const useWorker = useWorkerCheckbox.checked;
+        const preDecode = preDecodeCheckbox.checked;
+        const progressiveLoading = progressiveLoadingCheckbox.checked;
+        
+        // Run the tests
+        try {
+          // Get file sizes first
+          await getFileSizes(samplePath);
+          
+          // Run the tests multiple times
+          for (let i = 0; i < numRuns; i++) {
+            resultsDiv.innerHTML = `<p class="loading">Running test ${i+1} of ${numRuns}...</p>`;
+            
+            // Test FLAC loading and decoding time
+            const flacResult = await testLoadAndDecodeTime(`flac/samples/${samplePath}.flac`, 'flac', useWorker, progressiveLoading);
+            flacResults.loadTimes.push(flacResult.loadTime);
+            flacResults.decodeTimes.push(flacResult.decodeTime);
+            flacResults.totalTimes.push(flacResult.totalTime);
+            
+            // Test MP3 loading and decoding time
+            const mp3Result = await testLoadAndDecodeTime(`mp3/samples/${samplePath}.mp3`, 'mp3', useWorker, progressiveLoading);
+            mp3Results.loadTimes.push(mp3Result.loadTime);
+            mp3Results.decodeTimes.push(mp3Result.decodeTime);
+            mp3Results.totalTimes.push(mp3Result.totalTime);
+            
+            // Test Opus loading and decoding time (if available)
+            try {
+              const opusResult = await testLoadAndDecodeTime(`opus/samples/${samplePath}.opus`, 'opus', useWorker, progressiveLoading);
+              opusResults.loadTimes.push(opusResult.loadTime);
+              opusResults.decodeTimes.push(opusResult.decodeTime);
+              opusResults.totalTimes.push(opusResult.totalTime);
+            } catch (error) {
+              console.warn('Opus file not available, skipping test:', error);
+            }
+          }
+          
+          // Display results
+          displayResults();
+        } catch (error) {
+          resultsDiv.innerHTML = `<p>Error running tests: ${error.message}</p>`;
+        } finally {
+          startTestButton.disabled = false;
+        }
+      });
+      
+      // Function to test loading and decoding time for an audio file
+      async function testLoadAndDecodeTime(url, format, useWorker, progressiveLoading) {
+        return new Promise((resolve, reject) => {
+          const startTime = performance.now();
+          let loadTime = 0;
+          let decodeTime = 0;
+          let totalTime = 0;
+          
+          // Create a new audio element for each test
+          const audioElement = new Audio();
+          
+          // Set up event listeners
+          const loadHandler = async () => {
+            // Record load time
+            loadTime = performance.now() - startTime;
+            
+            // Now measure decode time
+            const decodeStartTime = performance.now();
+            
+            try {
+              if (useWorker && window.Worker) {
+                // Use worker for decoding
+                await decodeInWorker(url);
+              } else {
+                // Decode in main thread
+                await decodeInMainThread(url);
+              }
+              
+              // Record decode time
+              decodeTime = performance.now() - decodeStartTime;
+              totalTime = performance.now() - startTime;
+              
+              // Clean up
+              audioElement.removeEventListener('canplaythrough', loadHandler);
+              audioElement.removeEventListener('error', errorHandler);
+              
+              resolve({ loadTime, decodeTime, totalTime });
+            } catch (error) {
+              reject(error);
+            }
+          };
+          
+          const errorHandler = (error) => {
+            // Clean up
+            audioElement.removeEventListener('canplaythrough', loadHandler);
+            audioElement.removeEventListener('error', errorHandler);
+            
+            reject(new Error(`Failed to load audio: ${url}`));
+          };
+          
+          // Add event listeners
+          audioElement.addEventListener('canplaythrough', loadHandler);
+          audioElement.addEventListener('error', errorHandler);
+          
+          // Start loading the audio
+          if (progressiveLoading) {
+            // Use progressive loading
+            audioElement.preload = 'none';
+            audioElement.src = url;
+            audioElement.load();
+          } else {
+            // Standard loading
+            audioElement.src = url;
+            audioElement.load();
+          }
+        });
+      }
+      
+      // Function to decode audio in a worker
+      async function decodeInWorker(url) {
+        return new Promise(async (resolve, reject) => {
+          try {
+            // Create a worker if it doesn't exist
+            const worker = new Worker('decoder-worker.js');
+            
+            // Set up message handler
+            worker.onmessage = async function(e) {
+              if (e.data.error) {
+                if (e.data.needsMainThreadDecode && e.data.audioData) {
+                  // Worker couldn't decode because OfflineAudioContext isn't available
+                  // Fall back to main thread decoding
+                  console.log('Worker reported OfflineAudioContext not available, falling back to main thread decoding');
+                  try {
+                    const ctx = getAudioContext();
+                    const decodedData = await ctx.decodeAudioData(e.data.audioData);
+                    resolve(decodedData);
+                  } catch (decodeError) {
+                    reject(decodeError);
+                  }
+                } else {
+                  reject(new Error(e.data.error));
+                }
+              } else {
+                resolve(e.data.decodedData);
+              }
+              // Terminate the worker
+              worker.terminate();
+            };
+            
+            // Fetch the audio data
+            const response = await fetch(url);
+            const arrayBuffer = await response.arrayBuffer();
+            
+            // Send to worker for decoding
+            worker.postMessage({
+              id: url,
+              audioData: arrayBuffer
+            }, [arrayBuffer]);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }
+      
+      // Function to decode audio in the main thread
+      async function decodeInMainThread(url) {
+        try {
+          // Fetch the audio data
+          const response = await fetch(url);
+          const arrayBuffer = await response.arrayBuffer();
+          
+          // Decode the audio data
+          const ctx = getAudioContext();
+          await ctx.decodeAudioData(arrayBuffer);
+          return true;
+        } catch (error) {
+          console.error('Error decoding audio:', error);
+          throw error;
+        }
+      }
+      
+      // Function to get file sizes
+      async function getFileSizes(samplePath) {
+        try {
+          // Get FLAC file size
+          const flacResponse = await fetch(`flac/samples/${samplePath}.flac`, { method: 'HEAD' });
+          flacSize = parseInt(flacResponse.headers.get('content-length') || '0');
+          
+          // Get MP3 file size
+          const mp3Response = await fetch(`mp3/samples/${samplePath}.mp3`, { method: 'HEAD' });
+          mp3Size = parseInt(mp3Response.headers.get('content-length') || '0');
+          
+          // Get Opus file size if available
+          try {
+            const opusResponse = await fetch(`opus/samples/${samplePath}.opus`, { method: 'HEAD' });
+            if (opusResponse.ok) {
+              opusSize = parseInt(opusResponse.headers.get('content-length') || '0');
+            }
+          } catch (error) {
+            console.warn('Opus file not available:', error);
+          }
+        } catch (error) {
+          console.error('Error getting file sizes:', error);
+        }
+      }
+      
+      // Function to display test results
+      function displayResults() {
+        // Calculate statistics
+        const flacAvgLoad = average(flacResults.loadTimes);
+        const flacAvgDecode = average(flacResults.decodeTimes);
+        const flacAvgTotal = average(flacResults.totalTimes);
+        
+        const mp3AvgLoad = average(mp3Results.loadTimes);
+        const mp3AvgDecode = average(mp3Results.decodeTimes);
+        const mp3AvgTotal = average(mp3Results.totalTimes);
+        
+        // Update the table
+        document.getElementById('flac-size').textContent = formatFileSize(flacSize);
+        document.getElementById('flac-load').textContent = formatTime(flacAvgLoad);
+        document.getElementById('flac-decode').textContent = formatTime(flacAvgDecode);
+        document.getElementById('flac-total').textContent = formatTime(flacAvgTotal);
+        
+        document.getElementById('mp3-size').textContent = formatFileSize(mp3Size);
+        document.getElementById('mp3-load').textContent = formatTime(mp3AvgLoad);
+        document.getElementById('mp3-decode').textContent = formatTime(mp3AvgDecode);
+        document.getElementById('mp3-total').textContent = formatTime(mp3AvgTotal);
+        
+        // Only show Opus results if we have them
+        if (opusResults.loadTimes.length > 0) {
+          const opusAvgLoad = average(opusResults.loadTimes);
+          const opusAvgDecode = average(opusResults.decodeTimes);
+          const opusAvgTotal = average(opusResults.totalTimes);
+          
+          document.getElementById('opus-size').textContent = formatFileSize(opusSize);
+          document.getElementById('opus-load').textContent = formatTime(opusAvgLoad);
+          document.getElementById('opus-decode').textContent = formatTime(opusAvgDecode);
+          document.getElementById('opus-total').textContent = formatTime(opusAvgTotal);
+          
+          document.getElementById('opus-results').style.display = 'table-row';
+        } else {
+          document.getElementById('opus-results').style.display = 'none';
+        }
+        
+        // Show the table
+        resultsTable.style.display = 'table';
+        
+        // Calculate improvement percentages
+        const mp3SizeImprovement = ((flacSize - mp3Size) / flacSize) * 100;
+        const mp3TimeImprovement = ((flacAvgTotal - mp3AvgTotal) / flacAvgTotal) * 100;
+        
+        // Build results summary
+        let resultsSummary = `
+          <p>Tests completed successfully!</p>
+          <p>MP3 files are <strong>${mp3SizeImprovement.toFixed(1)}%</strong> smaller than FLAC files.</p>
+          <p>MP3 files load and decode <strong>${mp3TimeImprovement.toFixed(1)}%</strong> faster than FLAC files.</p>
+        `;
+        
+        // Add Opus comparison if available
+        if (opusResults.loadTimes.length > 0) {
+          const opusAvgTotal = average(opusResults.totalTimes);
+          const opusSizeImprovement = ((flacSize - opusSize) / flacSize) * 100;
+          const opusTimeImprovement = ((flacAvgTotal - opusAvgTotal) / flacAvgTotal) * 100;
+          const opusVsMp3Size = ((mp3Size - opusSize) / mp3Size) * 100;
+          const opusVsMp3Time = ((mp3AvgTotal - opusAvgTotal) / mp3AvgTotal) * 100;
+          
+          resultsSummary += `
+            <p>Opus files are <strong>${opusSizeImprovement.toFixed(1)}%</strong> smaller than FLAC files and <strong>${opusVsMp3Size.toFixed(1)}%</strong> smaller than MP3 files.</p>
+            <p>Opus files load and decode <strong>${opusTimeImprovement.toFixed(1)}%</strong> faster than FLAC files and <strong>${opusVsMp3Time.toFixed(1)}%</strong> faster than MP3 files.</p>
+          `;
+        }
+        
+        resultsSummary += `<p>See the table below for detailed results.</p>`;
+        
+        // Update the results div
+        resultsDiv.innerHTML = resultsSummary;
+      }
+      
+      // Helper function to calculate average
+      function average(arr) {
+        if (arr.length === 0) return 0;
+        return arr.reduce((a, b) => a + b, 0) / arr.length;
+      }
+      
+      // Helper function to format time in milliseconds
+      function formatTime(ms) {
+        return `${ms.toFixed(0)} ms`;
+      }
+      
+      // Helper function to format file size
+      function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+    });
+  </script>
+</body>
+</html>

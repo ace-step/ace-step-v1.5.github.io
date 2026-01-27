@@ -1,0 +1,139 @@
+{
+    "GeneralSongs": [
+        {
+            "id": "en-metal",
+            "fileName": "en_metal",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "en-indie",
+            "fileName": "en_indie",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "en-ballad",
+            "fileName": "en_ballad",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "zh-jazz",
+            "fileName": "zh_jazz",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "ko-pop",
+            "fileName": "ko_pop",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "zh-fusion",
+            "fileName": "zh_fusion",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "inst",
+            "fileName": "inst",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "en-rnb-dit-only",
+            "fileName": "en_rnb_dit_only",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "en-post",
+            "fileName": "en_post",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "ja-pop",
+            "fileName": "ja_pop",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "en-country",
+            "fileName": "en_country",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "zh-gufeng",
+            "fileName": "zh_gufeng",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "en-debstep-dit-only",
+            "fileName": "en_debstep_dit_only",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "funk-bass",
+            "fileName": "funk_bass",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "en-syth",
+            "fileName": "en_syth",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "vocal-chopped",
+            "fileName": "vocal_chopped",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "en-phonk",
+            "fileName": "en_phonk",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "en-haunting",
+            "fileName": "en_haunting",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "en-symphonic-metal",
+            "fileName": "en_symphonic_metal",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "en-trap",
+            "fileName": "en_trap",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "chiptune",
+            "fileName": "chiptune",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "rap-battle",
+            "fileName": "rap_battle",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "arabic-folk",
+            "fileName": "arabic_folk",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "es-reggaeton",
+            "fileName": "es_reggaeton",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "thai-hiphop",
+            "fileName": "thai_hiphop",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "no-folk",
+            "fileName": "no_folk",
+            "directory": "GeneralSongs"
+        },
+        {
+            "id": "yue-pop",
+            "fileName": "yue_pop",
+            "directory": "GeneralSongs"
+        }
+    ]
+}
