@@ -1,0 +1,20 @@
+[Intro]
+[Synth arpeggio and pads]
+
+[Build-up]
+[Drum beat enters]
+
+[Drop 1]
+[Instrumental]
+
+[Breakdown]
+[Synth arpeggio and pads]
+
+[Build-up]
+[Drum beat re-enters]
+
+[Drop 2]
+[Instrumental]
+
+[Outro]
+[Synth arpeggio and pads fade out]

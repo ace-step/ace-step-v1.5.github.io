@@ -135,5 +135,197 @@
             "fileName": "yue_pop",
             "directory": "GeneralSongs"
         }
+    ],
+    "XLDemos": [
+        {
+            "id": "en-pop-rock-anthem",
+            "fileName": "en_pop_rock_anthem",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-dnb-amen-break",
+            "fileName": "en_dnb_amen_break",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "ja-orchestral-rock-2",
+            "fileName": "ja_orchestral_rock_2",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-lofi-shoegaze",
+            "fileName": "en_lofi_shoegaze",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "ja-jpop-eurobeat",
+            "fileName": "ja_jpop_eurobeat",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-ethereal-cinematic",
+            "fileName": "en_ethereal_cinematic",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "zh-bossa-nova",
+            "fileName": "zh_bossa_nova",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-children-song",
+            "fileName": "en_children_song",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "inst-orchestral",
+            "fileName": "inst_orchestral",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "ja-cool-jazz",
+            "fileName": "ja_cool_jazz",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "es-latin-trap",
+            "fileName": "es_latin_trap",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "no-folk-metal",
+            "fileName": "no_folk_metal",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "it-opera-bel-canto",
+            "fileName": "it_opera_bel_canto",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "zh-chinese-opera",
+            "fileName": "zh_chinese_opera",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-chilled-ambient",
+            "fileName": "en_chilled_ambient",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "inst-synthwave",
+            "fileName": "inst_synthwave",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "ja-folk-pop",
+            "fileName": "ja_folk_pop",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "zh-chiptune-pop",
+            "fileName": "zh_chiptune_pop",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-dark-gothic-orchestral",
+            "fileName": "en_dark_gothic_orchestral",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "inst-tango",
+            "fileName": "inst_tango",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "zh-cpop-ballad",
+            "fileName": "zh_cpop_ballad",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-epic-orchestral-choir",
+            "fileName": "en_epic_orchestral_choir",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "zh-gothic-hiphop",
+            "fileName": "zh_gothic_hiphop",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-eurodance",
+            "fileName": "en_eurodance",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "zh-mandopop-ballad",
+            "fileName": "zh_mandopop_ballad",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-indie-folk-space",
+            "fileName": "en_indie_folk_space",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "zh-synthpop-trap",
+            "fileName": "zh_synthpop_trap",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-irish-folk",
+            "fileName": "en_irish_folk",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "zh-waltz-ballad",
+            "fileName": "zh_waltz_ballad",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-lofi-atmosphere",
+            "fileName": "en_lofi_atmosphere",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-melancholic-indie-rock",
+            "fileName": "en_melancholic_indie_rock",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-melodic-dubstep",
+            "fileName": "en_melodic_dubstep",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-pop-punk-ska",
+            "fileName": "en_pop_punk_ska",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-pop-rnb",
+            "fileName": "en_pop_rnb",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-rnb-ballad",
+            "fileName": "en_rnb_ballad",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-soft-pop-acoustic",
+            "fileName": "en_soft_pop_acoustic",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-trip-hop",
+            "fileName": "en_trip_hop",
+            "directory": "XLDemos"
+        },
+        {
+            "id": "en-uk-drum-and-bass",
+            "fileName": "en_uk_drum_and_bass",
+            "directory": "XLDemos"
+        }
     ]
 }
